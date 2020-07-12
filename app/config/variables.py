@@ -1,7 +1,7 @@
-from config.ssh_config import HOSTNAME
-from config.ssh_config import USERNAME
-from config.ssh_config import PASSWORD
-from config.ssh_config import PORT
+HOSTNAME = "localhost"
+USERNAME = "user"
+PASSWORD = "pass"
+PORT = 3333
 
 HADOOP_HOME_PATH = '/usr/local/hadoop/hadoop-3.2.1'
 
