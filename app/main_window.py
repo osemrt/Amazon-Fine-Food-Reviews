@@ -1,11 +1,12 @@
 import random
 
+import toml
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QDialog, QApplication
 
-from config import variables
 from util.HDFS import get_file_from_hdfs, copy_file_to_hdfs
 from util.SSH import execute, execute_and_write
+from config import config
 
 
 class MainWindow(QDialog):
@@ -241,7 +242,7 @@ class MainWindow(QDialog):
 
     def init_widgets(self):
         # Live node count
-        command = variables.HADOOP_HOME_PATH + "/bin/hdfs dfsadmin -report"
+        command = config.hadoop_home_path + "/bin/hdfs dfsadmin -report"
         result = execute(command)
         matched_lines = [line for line in result.split('\n') if "Live datanodes" in line]
         live_node_count = matched_lines[0].split(':')[0]
@@ -287,7 +288,7 @@ class MainWindow(QDialog):
         dataset_filename = dataset_path.split('/')[-1]
         copy_file_to_hdfs(dataset_path, "/app/dataset/")
         self.output_location_in_hdfs = "/app/outputs/" + filename_in_hdfs
-        return variables.HADOOP_HOME_PATH + "/bin/hadoop" + " jar " + jar_path + " " + \
+        return config.hadoop_home_path + "/bin/hadoop" + " jar " + jar_path + " " + \
                "/app/dataset/" + dataset_filename + " " + self.output_location_in_hdfs
 
     def get_file_from_hdfs(self):
@@ -296,7 +297,7 @@ class MainWindow(QDialog):
 
     def start_services(self):
         self.StartServicesQPushButton.setText("Stop")
-        execute_and_write(self.LogQTextEdt, variables.HADOOP_HOME_PATH + '/sbin/start-all.sh')
+        execute_and_write(self.LogQTextEdt, config.hadoop_home_path + '/sbin/start-all.sh')
         # self.ssh.execute_and_write(self.LogQTextEdt, variables.HADOOP_HOME_PATH + '/sbin/start-dfs.sh')
         # self.ssh.execute_and_write(self.LogQTextEdt, variables.HADOOP_HOME_PATH + '/sbin/start-yarn.sh')
         self.is_alive = True
@@ -305,7 +306,7 @@ class MainWindow(QDialog):
 
     def stop_services(self):
         self.StopServicesQPushButton.setText("Stop")
-        execute_and_write(self.LogQTextEdt, variables.HADOOP_HOME_PATH + '/sbin/stop-all.sh')
+        execute_and_write(self.LogQTextEdt, config.hadoop_home_path + '/sbin/stop-all.sh')
         self.StopServicesQPushButton.setText("Stop Services")
         self.LiveNodeCountQLabel.setText("Live nodes")
         self.MasterLabelQLabel.setText("Master IP address=")

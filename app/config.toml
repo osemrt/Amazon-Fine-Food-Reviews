@@ -1,0 +1,7 @@
+HADOOP_HOME_PATH = "/usr/local/hadoop/hadoop-3.2.1"
+
+[SSH-configurations]
+username = "user"
+password = "pass"
+server = "localhost"
+port = 3333
