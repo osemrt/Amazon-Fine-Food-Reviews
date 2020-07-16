@@ -36,6 +36,7 @@ def execute(command):
 def get_client():
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # TODO handle possible errors
     ssh_client.connect(hostname=config.host_name, username=config.username, password=config.password,
                        port=config.port)
     return ssh_client
