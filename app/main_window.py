@@ -11,17 +11,18 @@ from util.SSH import execute, execute_and_write
 class MainWindow(QDialog):
     output_location_in_hdfs = None
 
-    def __init__(self, dialog):
-        super().__init__(dialog)
-        dialog.resize(1007, 630)
+    def __init__(self, main_window):
+        self.main_window = main_window
+        super().__init__(self.main_window)
+        self.main_window.resize(1007, 630)
         size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         size_policy.setHorizontalStretch(0)
         size_policy.setVerticalStretch(0)
-        size_policy.setHeightForWidth(dialog.sizePolicy().hasHeightForWidth())
-        dialog.setSizePolicy(size_policy)
-        dialog.setMinimumSize(QtCore.QSize(1007, 630))
-        dialog.setMaximumSize(QtCore.QSize(1007, 630))
-        central_widget = QtWidgets.QWidget(dialog)
+        size_policy.setHeightForWidth(self.main_window.sizePolicy().hasHeightForWidth())
+        self.main_window.setSizePolicy(size_policy)
+        self.main_window.setMinimumSize(QtCore.QSize(1007, 630))
+        self.main_window.setMaximumSize(QtCore.QSize(1007, 630))
+        central_widget = QtWidgets.QWidget(self.main_window)
         widget = QtWidgets.QWidget(central_widget)
         widget.setGeometry(QtCore.QRect(21, 29, 962, 558))
         vertical_layout8 = QtWidgets.QVBoxLayout(widget)
@@ -197,14 +198,14 @@ class MainWindow(QDialog):
         self.log_text_area.setFont(font9)
         vertical_layout7.addWidget(self.log_text_area)
         vertical_layout8.addLayout(vertical_layout7)
-        dialog.setCentralWidget(central_widget)
-        menubar = QtWidgets.QMenuBar(dialog)
+        self.main_window.setCentralWidget(central_widget)
+        menubar = QtWidgets.QMenuBar(self.main_window)
         menubar.setGeometry(QtCore.QRect(0, 0, 1007, 21))
-        dialog.setMenuBar(menubar)
-        status_bar = QtWidgets.QStatusBar(dialog)
-        dialog.setStatusBar(status_bar)
+        self.main_window.setMenuBar(menubar)
+        status_bar = QtWidgets.QStatusBar(self.main_window)
+        self.main_window.setStatusBar(status_bar)
 
-        dialog.setWindowTitle("MainWindow")
+        self.main_window.setWindowTitle("MainWindow")
         dataset_label.setText("Dataset")
         dataset_browse_button.setText("Browse")
         jar_label.setText("Jar")
@@ -234,10 +235,10 @@ class MainWindow(QDialog):
         jar_browse_push_button.clicked.connect(lambda: self.browse_file("jar"))
         output_folder_browse_button.clicked.connect(lambda: self.browse_file("output"))
         self.start_button.clicked.connect(self.run)
-        self.start_services_button.clicked.connect(self.start_services)
+        self.start_services_button.clicked.connect(lambda: self.start_services(self.main_window))
         self.stop_services_button.clicked.connect(self.stop_services)
 
-        QtCore.QMetaObject.connectSlotsByName(dialog)
+        QtCore.QMetaObject.connectSlotsByName(self.main_window)
 
     def init_widgets(self):
         # Live node count
@@ -294,9 +295,12 @@ class MainWindow(QDialog):
         save_to = self.output_folder_path_line_edit.text()
         get_file_from_hdfs(self.output_location_in_hdfs, save_to)
 
-    def start_services(self):
+    def start_services(self, dialog):
         self.start_services_button.setText("Stop")
-        execute_and_write(self.log_text_area, config.hadoop_home_path + '/sbin/start-all.sh')
+        if not execute_and_write(self.log_text_area, config.hadoop_home_path + '/sbin/start-all.sh'):
+            QtWidgets.QMessageBox.warning(dialog, "Error happenned", "Unable to connect to SSH server")
+            self.start_services_button.setText("Start Services")
+            return
         # self.ssh.execute_and_write(self.LogQTextEdt, variables.HADOOP_HOME_PATH + '/sbin/start-dfs.sh')
         # self.ssh.execute_and_write(self.LogQTextEdt, variables.HADOOP_HOME_PATH + '/sbin/start-yarn.sh')
         self.is_alive = True
@@ -316,9 +320,7 @@ class MainWindow(QDialog):
 
 if __name__ == "__main__":
     import sys
-
     app = QtWidgets.QApplication(sys.argv)
-    main_window = QtWidgets.QMainWindow()
-    ui = MainWindow(main_window)
-    main_window.show()
+    ui = MainWindow(QtWidgets.QMainWindow())
+    ui.main_window.show()
     sys.exit(app.exec_())

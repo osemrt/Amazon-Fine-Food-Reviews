@@ -1,5 +1,5 @@
 import sys
-
+import socket
 import paramiko
 from PyQt5.QtWidgets import QApplication
 
@@ -11,6 +11,8 @@ sys.path.append("..")
 def execute_and_write(log_text_edit, command):
     print("COMMAND: " + command)
     ssh_client = get_client()
+    if not ssh_client:
+        return None
     stdin, stdout, stderr = ssh_client.exec_command(command, get_pty=True)
 
     for line in iter(stdout.readline, ""):
@@ -37,8 +39,11 @@ def get_client():
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     # TODO handle possible errors
-    ssh_client.connect(hostname=config.host_name, username=config.username, password=config.password,
-                       port=config.port)
+    try:
+        ssh_client.connect(hostname=config.host_name, username=config.username, password=config.password,
+                           port=config.port)
+    except socket.error:
+        return
     return ssh_client
 
 
